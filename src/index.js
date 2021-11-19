@@ -17,7 +17,7 @@ $(document).ready(function () {
   });
 
   const backgrElements = Object.values(backgrElementsObj);
-
+  //<img class="btn_icon" src="${editIcon}" />
   // Attach buttons to each div that has a backgr-image ccs attribute => assign unique ID to each div and btn
   backgrElements.forEach((div) => {
     const uniqueId = Math.floor(Math.random() * backgrElements.length);
