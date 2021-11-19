@@ -1,4 +1,8 @@
 import styles from "./index.css";
+import editIcon from "./images/edit.svg";
+import imageIcon from "./images/image.svg";
+import wimgrLogo from "./images/w-imgr-logo.svg";
+import loadIcon from "./images/loader.svg";
 
 $("head").append(`<style>${styles.toString()}</style>`);
 $(document).ready(function () {
@@ -20,7 +24,7 @@ $(document).ready(function () {
     const splashID = `btn-${uniqueId}`;
     const splashBtn = `
           <button id="${splashID}" class="splash_btn">
-            <img class="btn_icon" src="./images/edit.svg" />
+            <img class="btn_icon" src="${editIcon}" />
           </button>
         `;
     const className = `.${div.className}`;
@@ -71,7 +75,11 @@ $(document).ready(function () {
         const img = new Image();
         img.src = `${$(this).attr("data")}`;
 
-        $(`#btn-${id}`).append($("<div>").addClass("w-imgr_loading_animation"));
+        $(`#btn-${id}`).append(
+          $("<div>")
+            .addClass("w-imgr_loading_animation")
+            .css("background-image", `url(${loadIcon})`)
+        );
         $(`#btn-${id}`).append($("<h5>Loading</h5>").addClass("loading_text"));
         await img.decode();
         $(".w-imgr_loading_animation").remove();
@@ -140,7 +148,7 @@ $(document).ready(function () {
     const modal = `
       <div class="modal_wrapper modal_animation">
         <div class="modal_header_wrapper">
-          <img class="w-imgr_logo" src="./images/w-imgr-logo.svg">
+          <img class="w-imgr_logo" src="${wimgrLogo}">
           <h4 class="w-imgr_current_el">Editing: ${
             btn.parent()[0].className
           }</h4>
@@ -169,7 +177,7 @@ $(document).ready(function () {
       $(".more_btn").css("display", "flex");
     });
 
-    const moreBtnHtml = `<button class="more_btn small_btn"><img class="btn_icon btn_icon_margin" src="./images/image.svg" />Load more</button>`;
+    const moreBtnHtml = `<button class="more_btn small_btn"><img class="btn_icon btn_icon_margin" src="${imageIcon}" />Load more</button>`;
     $(".more_btn_wrapper").append(moreBtnHtml);
     $(".more_btn").click(function () {
       loadImages($(".search_bar").val(), splashID);

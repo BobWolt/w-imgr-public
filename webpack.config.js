@@ -25,8 +25,13 @@ module.exports = {
         test: /\.css$/,
         use: ["css-loader", "postcss-loader"],
       },
+      {
+        test: /\.(png|jpg|svg)$/,
+        loader: "url-loader",
+      },
     ],
   },
+
   plugins: [
     isProduction
       ? null

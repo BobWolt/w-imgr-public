@@ -3,8 +3,8 @@ body {
   font-weight: bolder;
 }
 
-h1{
-  color: red;
+h1 {
+  color: blue;
 }
 
 h3 {
@@ -177,6 +177,7 @@ a {
   width: 100px;
   height: 25px;
   object-fit: contain;
+  background-image: url("./images/w-imgr-logo.svg");
 }
 
 .w-imgr_modal_controls_wrapper {
@@ -325,6 +326,7 @@ a {
 .btn_icon {
   width: 16px;
   height: 16px;
+  background-image: url("./images/edit.svg");
 }
 
 .btn_icon_margin {
