@@ -177,7 +177,6 @@ a {
   width: 100px;
   height: 25px;
   object-fit: contain;
-  background-image: url("./images/w-imgr-logo.svg");
 }
 
 .w-imgr_modal_controls_wrapper {
