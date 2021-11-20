@@ -102,8 +102,8 @@ a {
   height: auto;
   width: 100%;
   max-width: 1400px;
-  left: 0;
-  right: 0;
+/*   left: 0;
+  right: 0; */
   margin-left: auto;
   margin-right: auto;
   background-color: white;
@@ -130,11 +130,11 @@ a {
 @keyframes w-imgr_modal_appear {
   0% {
     opacity: 0;
-    bottom: -100px;
+    bottom: -10px;
   }
   100% {
     opacity: 1;
-    bottom: 0px;
+    bottom: 12px;
   }
 }
 
