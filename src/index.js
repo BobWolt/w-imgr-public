@@ -7,7 +7,9 @@ import loadIcon from "./images/loader.svg";
 $("head").append(`<style>${styles.toString()}</style>`);
 $(document).ready(function () {
   console.log("ready");
+
   const proxy = "https://w-imgr-proxy.herokuapp.com/";
+
   // state variable to watch active modal
   let activeModal = false;
 
@@ -134,9 +136,7 @@ $(document).ready(function () {
   const openModal = function (btn) {
     console.log("clicked", btn);
     activeModal = true;
-    //const splashID = $(btn).attr("id").slice(4);
     const splashID = $(btn).attr("id").split("btn-")[1];
-    console.log('correct btn id passed to image', splashID)
     console.log(btn.parent());
     const modal = `
       <div class="w-imgr_modal_wrapper w-imgr_modal_animation">
