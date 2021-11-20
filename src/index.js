@@ -17,19 +17,19 @@ $(document).ready(function () {
   });
 
   const backgrElements = Object.values(backgrElementsObj);
-  //<img class="btn_icon" src="${editIcon}" />
+
   // Attach buttons to each div that has a backgr-image ccs attribute => assign unique ID to each div and btn
-  backgrElements.forEach((div) => {
-    const uniqueId = Math.floor(Math.random() * backgrElements.length);
-    const splashID = `btn-${uniqueId}`;
+  backgrElements.forEach((div, i) => {
+    const uniqueId = i;
+    const splashID = `w-imgr_btn-${uniqueId}`;
     const splashBtn = `
-          <button id="${splashID}" class="splash_btn">
-            <img class="btn_icon" src="${editIcon}" />  
+          <button id="${splashID}" class="w-imgr_splash_btn">
+            <img class="w-imgr_btn_icon" src="${editIcon}" />  
           </button>
         `;
     const className = `.${div.className}`;
     $(className).append(splashBtn);
-    $(`#${splashID}`).parent().attr("id", `img-${uniqueId}`);
+    $(`#${splashID}`).parent().attr("id", `w-imgr_img-${uniqueId}`);
   });
 
   // index variable for updating Load More images
@@ -46,45 +46,45 @@ $(document).ready(function () {
       idIndex++;
       const imgSrcThumb = imgArr[index].urls.thumb;
       const imgSrcFull = imgArr[index].urls.full;
-      console.log("idindex", idIndex);
 
       const html = `
-        <div class="image_wrapper">
-          <div class="unsplash_image" id="unsplash-img-${idIndex}"></div>
-          <div class="attribution_wrapper">
-            <h5 class="creator_name">Photo by:<a class="attribution_link" target="_blank" href="${imgArr[index].links.html}">&nbsp${imgArr[index].user.name}</a></h5>
-            <h5 class="unsplash_link">
+        <div class="w-imgr_image_wrapper">
+          <div class="w-imgr_unsplash_image" id="w-imgr_unsplash-img-${idIndex}"></div>
+          <div class="w-imgr_attribution_wrapper">
+            <h5 class="w-imgr_creator_name">Photo by:<a class="w-imgr_attribution_link" target="_blank" href="${imgArr[index].links.html}">&nbsp${imgArr[index].user.name}</a></h5>
+            <h5 class="w-imgr_unsplash_link">
               <a href="https://unsplash.com" target="_blank">Unsplash</a>
             </h5>
           </div>
         </div>
         `;
-      $(".image_container").append(html);
-      $(`#unsplash-img-${idIndex}`).css(
+      $(".w-imgr_image_container").append(html);
+      $(`#w-imgr_unsplash-img-${idIndex}`).css(
         "background-image",
         `url(${imgSrcThumb})`
       );
-      $(`#unsplash-img-${idIndex}`).attr("data", `${imgSrcFull}`);
+      $(`#w-imgr_unsplash-img-${idIndex}`).attr("data", `${imgSrcFull}`);
     });
 
     // when image is selected load in hd quality image from data attr as background-image
-    $(".unsplash_image").click(function () {
-      $(".image_wrapper_selected").removeClass("image_wrapper_selected");
-      $(this).parent().addClass("image_wrapper_selected");
+    $(".w-imgr_unsplash_image").click(function () {
+      console.log('button id', id)
+      $(".w-imgr_image_wrapper_selected").removeClass("w-imgr_image_wrapper_selected");
+      $(this).parent().addClass("w-imgr_image_wrapper_selected");
       (async () => {
         const img = new Image();
         img.src = `${$(this).attr("data")}`;
 
-        $(`#btn-${id}`).append(
+        $(`#w-imgr_btn-${id}`).append(
           $("<div>")
             .addClass("w-imgr_loading_animation")
             .css("background-image", `url(${loadIcon})`)
         );
-        $(`#btn-${id}`).append($("<h5>Loading</h5>").addClass("loading_text"));
+        $(`#w-imgr_btn-${id}`).append($("<h5>Loading</h5>").addClass("w-imgr_loading_text"));
         await img.decode();
         $(".w-imgr_loading_animation").remove();
-        $(".loading_text").remove();
-        $(`#img-${id}`).css("background-image", `url(${$(this).attr("data")}`);
+        $(".w-imgr_loading_text").remove();
+        $(`#w-imgr_img-${id}`).css("background-image", `url(${$(this).attr("data")}`);
         // img is ready to use
         console.log(`width: ${img.width}, height: ${img.height}`);
       })();
@@ -108,24 +108,24 @@ $(document).ready(function () {
     console.log("response", res);
 
     displayImages(res, id);
-    console.log("images amount: ", $(".unsplash_image").length);
+    console.log("images amount: ", $(".w-imgr_unsplash_image").length);
     pageNumber++;
   };
 
   // closing the modal
   const closeModalLogic = function () {
     pageNumber = 1;
-    $(".modal_wrapper").removeClass("modal_animation");
-    $(".modal_wrapper").addClass("modal_animation_remove");
+    $(".w-imgr_modal_wrapper").removeClass("w-imgr_modal_animation");
+    $(".w-imgr_modal_wrapper").addClass("w-imgr_modal_animation_remove");
     activeModal = false;
     setTimeout(function () {
-      $(".modal_wrapper").remove();
+      $(".w-imgr_modal_wrapper").remove();
     }, 800);
   };
 
   // To attach to close btn on creation of modal
   const closeModal = function () {
-    $(".close_modal_btn").click(function () {
+    $(".w-imgr_close_modal_btn").click(function () {
       closeModalLogic();
     });
   };
@@ -134,51 +134,53 @@ $(document).ready(function () {
   const openModal = function (btn) {
     console.log("clicked", btn);
     activeModal = true;
-    const splashID = $(btn).attr("id").slice(4);
+    //const splashID = $(btn).attr("id").slice(4);
+    const splashID = $(btn).attr("id").split("btn-")[1];
+    console.log('correct btn id passed to image', splashID)
     console.log(btn.parent());
     const modal = `
-      <div class="modal_wrapper modal_animation">
-        <div class="modal_header_wrapper">
+      <div class="w-imgr_modal_wrapper w-imgr_modal_animation">
+        <div class="w-imgr_modal_header_wrapper">
           <img class="w-imgr_logo" src="${wimgrLogo}">
           <h4 class="w-imgr_current_el">Editing: ${
             btn.parent()[0].className
           }</h4>
           <div class="w-imgr_modal_controls_wrapper">
-            <button class="close_modal_btn">Close</button>
+            <button class="w-imgr_close_modal_btn">Close</button>
           </div>
         </div>
         <div class="form_wrapper">
-          <form id="form-image-search">
+          <form id="w-imgr_form-image-search">
             <input
-              class="search_bar"
+              class="w-imgr_search_bar"
               type="text"
               placeholder="Search for images"
             />
           </form>
         </div>
-        <div class="image_container"></div>
-        <div class="more_btn_wrapper"></div>
+        <div class="w-imgr_image_container"></div>
+        <div class="w-imgr_more_btn_wrapper"></div>
       </div>
       `;
     $("body").append(modal);
-    $(".search_bar").focus();
-    $("#form-image-search").submit(function (e) {
+    $(".w-imgr_search_bar").focus();
+    $("#w-imgr_form-image-search").submit(function (e) {
       e.preventDefault();
-      loadImages($(".search_bar").val(), splashID);
-      $(".more_btn").css("display", "flex");
+      loadImages($(".w-imgr_search_bar").val(), splashID);
+      $(".w-imgr_more_btn").css("display", "flex");
     });
 
-    const moreBtnHtml = `<button class="more_btn small_btn"><img class="btn_icon btn_icon_margin" src="${imageIcon}" />Load more</button>`;
-    $(".more_btn_wrapper").append(moreBtnHtml);
-    $(".more_btn").click(function () {
-      loadImages($(".search_bar").val(), splashID);
+    const moreBtnHtml = `<button class="w-imgr_more_btn w-imgr_small_btn"><img class="w-imgr_btn_icon w-imgr_btn_icon_margin" src="${imageIcon}" />Load more</button>`;
+    $(".w-imgr_more_btn_wrapper").append(moreBtnHtml);
+    $(".w-imgr_more_btn").click(function () {
+      loadImages($(".w-imgr_search_bar").val(), splashID);
     });
 
     closeModal();
   };
 
   // when other w-imgr btn is pressed modal closes and removed, and new modal is created
-  $(".splash_btn").click(function () {
+  $(".w-imgr_splash_btn").click(function () {
     const currentBtn = $(this);
     if (activeModal) {
       closeModalLogic();
