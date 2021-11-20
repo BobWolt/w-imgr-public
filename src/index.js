@@ -19,6 +19,7 @@ $(document).ready(function () {
   });
 
   const backgrElements = Object.values(backgrElementsObj);
+  console.log('backgr els: ', backgrElements)
 
   // Attach buttons to each div that has a backgr-image ccs attribute => assign unique ID to each div and btn
   backgrElements.forEach((div, i) => {
@@ -29,9 +30,17 @@ $(document).ready(function () {
             <img class="w-imgr_btn_icon" src="${editIcon}" />  
           </button>
         `;
-    const className = `.${div.className}`;
-    $(className).append(splashBtn);
+
+    if(div.className){
+      $(div).attr("id", `w-imgr_img-${uniqueId}`);
+    } else {
+        return false
+    }
+
+    $(`#w-imgr_img-${uniqueId}`).append(splashBtn);
+
     $(`#${splashID}`).parent().attr("id", `w-imgr_img-${uniqueId}`);
+
   });
 
   // index variable for updating Load More images

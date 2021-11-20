@@ -33,11 +33,11 @@ module.exports = {
   },
 
   plugins: [
-    /* isProduction
+    isProduction
       ? null
       : new HTMLWebpackPlugin({
           template: path.resolve(__dirname, "/index.html"),
-        }), */
+        }),
     isProduction ? null : new webpack.HotModuleReplacementPlugin(),
     // removes the null conditional entries
   ].filter(Boolean),

@@ -264,8 +264,7 @@ a {
   height: 30px;
   border-radius: 10px;
   border: none;
-  padding: 8px;
-  padding-left: 32px;
+  padding: 8px 32px 8px 32px;
   margin-bottom: 16px;
   font-size: 18px;
   font-family: "Open Sans", sans-serif;
@@ -305,8 +304,8 @@ a {
   align-items: center;
   width: auto;
   height: auto;
-  bottom: 32px;
-  left: 32px;
+  bottom: 1px;
+  left: 1px;
   padding: 8px 24px 8px 24px;
   background: rgb(32, 124, 250);
   background: linear-gradient(
