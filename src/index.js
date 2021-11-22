@@ -3,6 +3,36 @@ import editIcon from "./images/edit.svg";
 import imageIcon from "./images/image.svg";
 import wimgrLogo from "./images/w-imgr-logo.svg";
 import loadIcon from "./images/loader.svg";
+const JSZipUtils = require("jszip-utils");
+// cNlSmrvPU2c8D2g26mR8gtxLY5h0Z6WCcTBmbAsPW0Y
+
+// get request needed to trigger image download counter MANDATORY for unsplash API usage
+const downloadTrigger = async function () {
+  let getImages = await fetch(
+    `https://api.unsplash.com/photos/IFxjDdqK_0U/download?ixid=MnwyNzU4MDl8MHwxfHNlYXJjaHwxfHxjYXQlM0V8ZW58MHx8fHwxNjM3NTczNDU5`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: "Client-ID cNlSmrvPU2c8D2g26mR8gtxLY5h0Z6WCcTBmbAsPW0Y",
+      },
+    }
+  );
+
+  let res = await getImages.json();
+  console.log("DOWNLOAD API RES", res);
+};
+
+const favoriteDownload = async function (imageURL) {
+  let getImages = await fetch(`${proxy}${imageURL}`, {
+    method: "GET",
+    headers: {
+      Authorization: "Client-ID cNlSmrvPU2c8D2g26mR8gtxLY5h0Z6WCcTBmbAsPW0Y",
+    },
+  });
+
+  let res = await getImages.json();
+  console.log("favorite download", res);
+};
 
 const starIcon = `<svg
 xmlns="http://www.w3.org/2000/svg"
@@ -125,13 +155,17 @@ $(document).ready(function () {
       })();
     });
     // Favorite images
-    $(".w-imgr_favorite").click(function (e) {
+    $(".w-imgr_favorite").click(function () {
       $(this).addClass("w-imgr_isfavorite");
       console.log($(this).siblings(".w-imgr_unsplash_image").attr("data"));
       favoriteImages.push(
         $(this).siblings(".w-imgr_unsplash_image").attr("data")
       );
       console.log(favoriteImages);
+      /* FileSaver.saveAs(
+        `${proxy}${$(this).siblings(".w-imgr_unsplash_image").attr("data")}`,
+        "image.jpg"
+      ); */
     });
     index = -1;
   };
@@ -184,6 +218,7 @@ $(document).ready(function () {
       <div class="w-imgr_modal_wrapper w-imgr_modal_animation">
         <div class="w-imgr_modal_header_wrapper">
           <img class="w-imgr_logo" src="${wimgrLogo}">
+          <button class="w-imgr_download_btn">Download as .ZIP</button>
           <h4 class="w-imgr_current_el">Editing: ${
             btn.parent()[0].className
           }</h4>
@@ -219,6 +254,9 @@ $(document).ready(function () {
     });
 
     closeModal();
+    $(".w-imgr_download_btn").click(function () {
+      downloadZIP();
+    });
   };
 
   // when other w-imgr btn is pressed modal closes and removed, and new modal is created
@@ -238,7 +276,53 @@ $(document).ready(function () {
 });
 
 // .ZIP logic
-const zip = new JSZip();
-console.log("zip", zip);
 
-// FileSaver.saveAs("http://localhost:8080/src/images/loader.svg", "image.svg");
+const downloadZIP = function () {
+  console.log("download btn clicked");
+
+  const Promise = window.Promise;
+  if (!Promise) {
+    Promise = JSZip.external.Promise;
+  }
+
+  /**
+   * Fetch the content and return the associated promise.
+   * @param {String} url the url of the content to fetch.
+   * @return {Promise} the promise containing the data.
+   */
+  function urlToPromise(url) {
+    return new Promise(function (resolve, reject) {
+      JSZipUtils.getBinaryContent(url, function (err, data) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(data);
+        }
+      });
+    });
+  }
+
+  const zip = new JSZip();
+
+  // find every checked item
+  favoriteImages.forEach((image) => {
+    //var filename = image.replace(/.*\//g, "");
+    const filename = `${image}.jpg`;
+    zip.file(filename, urlToPromise(image), { binary: true });
+  });
+
+  // when everything has been downloaded => trigger download
+  zip
+    .generateAsync({ type: "blob" }, function updateCallback(metadata) {
+      let msg = "progression : " + metadata.percent.toFixed(2) + " %";
+      if (metadata.currentFile) {
+        msg += ", current file = " + metadata.currentFile;
+      }
+      console.log(msg);
+    })
+    .then(function callback(blob) {
+      saveAs(blob, "example.zip");
+    });
+
+  return false;
+};

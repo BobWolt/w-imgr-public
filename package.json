@@ -19,6 +19,7 @@
     "html-webpack-plugin": "^5.5.0",
     "install": "^0.13.0",
     "jszip": "^3.7.1",
+    "jszip-utils": "^0.1.0",
     "npm": "^8.1.4",
     "postcss": "^8.3.11",
     "postcss-loader": "^6.2.0",
