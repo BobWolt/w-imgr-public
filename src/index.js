@@ -19,7 +19,7 @@ $(document).ready(function () {
   });
 
   const backgrElements = Object.values(backgrElementsObj);
-  console.log('backgr els: ', backgrElements)
+  console.log("backgr els: ", backgrElements);
 
   // Attach buttons to each div that has a backgr-image ccs attribute => assign unique ID to each div and btn
   backgrElements.forEach((div, i) => {
@@ -31,16 +31,15 @@ $(document).ready(function () {
           </button>
         `;
 
-    if(div.className){
+    if (div.className) {
       $(div).attr("id", `w-imgr_img-${uniqueId}`);
     } else {
-        return false
+      return false;
     }
 
     $(`#w-imgr_img-${uniqueId}`).append(splashBtn);
 
     $(`#${splashID}`).parent().attr("id", `w-imgr_img-${uniqueId}`);
-
   });
 
   // index variable for updating Load More images
@@ -62,9 +61,9 @@ $(document).ready(function () {
         <div class="w-imgr_image_wrapper">
           <div class="w-imgr_unsplash_image" id="w-imgr_unsplash-img-${idIndex}"></div>
           <div class="w-imgr_attribution_wrapper">
-            <h5 class="w-imgr_creator_name">Photo by:<a class="w-imgr_attribution_link" target="_blank" href="${imgArr[index].links.html}">&nbsp${imgArr[index].user.name}</a></h5>
+            <h5 class="w-imgr_creator_name">Photo by:<a class="w-imgr_attribution_link" target="_blank" href="${imgArr[index].user.links.html}?utm_source=w-imgr&utm_medium=referral" >&nbsp${imgArr[index].user.name}</a></h5>
             <h5 class="w-imgr_unsplash_link">
-              <a href="https://unsplash.com" target="_blank">Unsplash</a>
+              <a href="https://unsplash.com?utm_source=w-imgr&utm_medium=referral" target="_blank">Unsplash</a>
             </h5>
           </div>
         </div>
@@ -79,8 +78,10 @@ $(document).ready(function () {
 
     // when image is selected load in hd quality image from data attr as background-image
     $(".w-imgr_unsplash_image").click(function () {
-      console.log('button id', id)
-      $(".w-imgr_image_wrapper_selected").removeClass("w-imgr_image_wrapper_selected");
+      console.log("button id", id);
+      $(".w-imgr_image_wrapper_selected").removeClass(
+        "w-imgr_image_wrapper_selected"
+      );
       $(this).parent().addClass("w-imgr_image_wrapper_selected");
       (async () => {
         const img = new Image();
@@ -91,11 +92,16 @@ $(document).ready(function () {
             .addClass("w-imgr_loading_animation")
             .css("background-image", `url(${loadIcon})`)
         );
-        $(`#w-imgr_btn-${id}`).append($("<h5>Loading</h5>").addClass("w-imgr_loading_text"));
+        $(`#w-imgr_btn-${id}`).append(
+          $("<h5>Loading</h5>").addClass("w-imgr_loading_text")
+        );
         await img.decode();
         $(".w-imgr_loading_animation").remove();
         $(".w-imgr_loading_text").remove();
-        $(`#w-imgr_img-${id}`).css("background-image", `url(${$(this).attr("data")}`);
+        $(`#w-imgr_img-${id}`).css(
+          "background-image",
+          `url(${$(this).attr("data")}`
+        );
         // img is ready to use
         console.log(`width: ${img.width}, height: ${img.height}`);
       })();
