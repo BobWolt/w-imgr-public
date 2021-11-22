@@ -4,6 +4,23 @@ import imageIcon from "./images/image.svg";
 import wimgrLogo from "./images/w-imgr-logo.svg";
 import loadIcon from "./images/loader.svg";
 
+const starIcon = `<svg
+xmlns="http://www.w3.org/2000/svg"
+class="w-imgr_favorite"
+viewBox="0 0 512 512"
+>
+<title>Star</title>
+<path
+  d="M394 480a16 16 0 01-9.39-3L256 383.76 127.39 477a16 16 0 01-24.55-18.08L153 310.35 23 221.2a16 16 0 019-29.2h160.38l48.4-148.95a16 16 0 0130.44 0l48.4 149H480a16 16 0 019.05 29.2L359 310.35l50.13 148.53A16 16 0 01394 480z"
+/>
+</svg>`;
+
+const JSZip = require("jszip");
+const FileSaver = require("file-saver");
+
+// when downloading, filter out unique values of arr only so that the zip file contains only one image per file
+let favoriteImages = [];
+
 $("head").append(`<style>${styles.toString()}</style>`);
 $(document).ready(function () {
   console.log("ready");
@@ -66,6 +83,7 @@ $(document).ready(function () {
               <a href="https://unsplash.com?utm_source=w-imgr&utm_medium=referral" target="_blank">Unsplash</a>
             </h5>
           </div>
+          ${starIcon}
         </div>
         `;
       $(".w-imgr_image_container").append(html);
@@ -105,6 +123,15 @@ $(document).ready(function () {
         // img is ready to use
         console.log(`width: ${img.width}, height: ${img.height}`);
       })();
+    });
+    // Favorite images
+    $(".w-imgr_favorite").click(function (e) {
+      $(this).addClass("w-imgr_isfavorite");
+      console.log($(this).siblings(".w-imgr_unsplash_image").attr("data"));
+      favoriteImages.push(
+        $(this).siblings(".w-imgr_unsplash_image").attr("data")
+      );
+      console.log(favoriteImages);
     });
     index = -1;
   };
@@ -207,4 +234,11 @@ $(document).ready(function () {
       console.log(editIcon);
     }
   });
+  //$(".w-imgr_favorite").css("background-image", `url("${favoriteIcon}")`);
 });
+
+// .ZIP logic
+const zip = new JSZip();
+console.log("zip", zip);
+
+// FileSaver.saveAs("http://localhost:8080/src/images/loader.svg", "image.svg");

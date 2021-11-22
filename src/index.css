@@ -273,6 +273,26 @@ a {
   cursor: pointer;
 }
 
+.w-imgr_favorite {
+  width: 25px;
+  height: 25px;
+  fill: none;
+  stroke: black;
+  stroke-width: 20px;
+}
+
+.w-imgr_favorite:hover {
+  width: 25px;
+  height: 25px;
+  fill: rgb(255, 174, 0);
+  stroke: none;
+}
+
+.w-imgr_isfavorite {
+  fill: rgb(255, 174, 0);
+  stroke: none;
+}
+
 .w-imgr_search_bar {
   width: 1200px;
   height: 30px;
