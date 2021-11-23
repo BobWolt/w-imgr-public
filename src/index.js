@@ -3,8 +3,8 @@ import editIcon from "./images/edit.svg";
 import imageIcon from "./images/image.svg";
 import wimgrLogo from "./images/w-imgr-logo.svg";
 import loadIcon from "./images/loader.svg";
+import downloadIcon from "./images/download.svg";
 const JSZipUtils = require("jszip-utils");
-// cNlSmrvPU2c8D2g26mR8gtxLY5h0Z6WCcTBmbAsPW0Y
 
 // get request needed to trigger image download counter MANDATORY for unsplash API usage
 const downloadTrigger = async function () {
@@ -102,24 +102,42 @@ $(document).ready(function () {
       index++;
       idIndex++;
       const imgSrcThumb = imgArr[index].urls.thumb;
+      const imgSrcSmall = imgArr[index].urls.small;
       const imgSrcFull = imgArr[index].urls.full;
 
       const html = `
         <div class="w-imgr_image_wrapper">
-          <div class="w-imgr_unsplash_image" id="w-imgr_unsplash-img-${idIndex}"></div>
-          <div class="w-imgr_attribution_wrapper">
-            <h5 class="w-imgr_creator_name">Photo by:<a class="w-imgr_attribution_link" target="_blank" href="${imgArr[index].user.links.html}?utm_source=w-imgr&utm_medium=referral" >&nbsp${imgArr[index].user.name}</a></h5>
-            <h5 class="w-imgr_unsplash_link">
-              <a href="https://unsplash.com?utm_source=w-imgr&utm_medium=referral" target="_blank">Unsplash</a>
-            </h5>
-          </div>
-          ${starIcon}
-        </div>
+              <div class="w-imgr_unsplash_image" id="w-imgr_unsplash-img-${idIndex}">
+                <div class="w-imgr_favorite_wrapper">
+                  <div class="w-imgr_favorite_btn">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="w-imgr_favorite"
+                      viewBox="0 0 512 512"
+                    >
+                      <title>Star</title>
+                      <path
+                        d="M394 480a16 16 0 01-9.39-3L256 383.76 127.39 477a16 16 0 01-24.55-18.08L153 310.35 23 221.2a16 16 0 019-29.2h160.38l48.4-148.95a16 16 0 0130.44 0l48.4 149H480a16 16 0 019.05 29.2L359 310.35l50.13 148.53A16 16 0 01394 480z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <div class="w-imgr_attribution_wrapper">
+                  <h5 class="w-imgr_creator_name">Photo by:  
+                    <a class="w-imgr_attribution_link" target="_blank" href="${imgArr[index].user.links.html}?utm_source=w-imgr&utm_medium=referral" >${imgArr[index].user.name}</a>
+                  </h5>
+                  <h5 class="w-imgr_unsplash_link">
+                    <a href="https://unsplash.com?utm_source=w-imgr&utm_medium=referral" target="_blank">Unsplash</a>
+                  </h5>
+                </div>
+              </div>
+            </div>
         `;
+
       $(".w-imgr_image_container").append(html);
       $(`#w-imgr_unsplash-img-${idIndex}`).css(
         "background-image",
-        `url(${imgSrcThumb})`
+        `url(${imgSrcSmall})`
       );
       $(`#w-imgr_unsplash-img-${idIndex}`).attr("data", `${imgSrcFull}`);
     });
@@ -150,23 +168,36 @@ $(document).ready(function () {
           "background-image",
           `url(${$(this).attr("data")}`
         );
-        // img is ready to use
-        console.log(`width: ${img.width}, height: ${img.height}`);
       })();
     });
-    // Favorite images
-    $(".w-imgr_favorite").click(function () {
-      $(this).addClass("w-imgr_isfavorite");
-      console.log($(this).siblings(".w-imgr_unsplash_image").attr("data"));
-      favoriteImages.push(
-        $(this).siblings(".w-imgr_unsplash_image").attr("data")
-      );
-      console.log(favoriteImages);
-      /* FileSaver.saveAs(
-        `${proxy}${$(this).siblings(".w-imgr_unsplash_image").attr("data")}`,
-        "image.jpg"
-      ); */
+
+    $(".w-imgr_favorite_btn").click(function (e) {
+      e.stopPropagation();
+      const imgSrc = $(this).parents(".w-imgr_unsplash_image").attr("data");
+
+      if (!$(this).hasClass("w-imgr_isfavorite_btn")) {
+        $(this).addClass("w-imgr_isfavorite_btn");
+        $(this).children(".w-imgr_favorite").addClass("w-imgr_isfavorite");
+        favoriteImages.push(imgSrc);
+      } else {
+        $(this).removeClass("w-imgr_isfavorite_btn");
+        $(this).children(".w-imgr_favorite").removeClass("w-imgr_isfavorite");
+        favoriteImages.splice(favoriteImages.indexOf(imgSrc), 1);
+      }
     });
+
+    // Check for previously favorited images and toggle correct classes
+    favoriteImages.forEach((imgSrc) => {
+      $(".w-imgr_unsplash_image").each(function () {
+        if ($(this).attr("data") === imgSrc) {
+          $(this)
+            .find(".w-imgr_favorite_btn")
+            .addClass("w-imgr_isfavorite_btn");
+          $(this).find("svg").addClass("w-imgr_isfavorite");
+        }
+      });
+    });
+
     index = -1;
   };
 
@@ -213,15 +244,16 @@ $(document).ready(function () {
     console.log("clicked", btn);
     activeModal = true;
     const splashID = $(btn).attr("id").split("btn-")[1];
-    console.log(btn.parent());
     const modal = `
       <div class="w-imgr_modal_wrapper w-imgr_modal_animation">
         <div class="w-imgr_modal_header_wrapper">
           <img class="w-imgr_logo" src="${wimgrLogo}">
-          <button class="w-imgr_download_btn">Download as .ZIP</button>
-          <h4 class="w-imgr_current_el">Editing: ${
-            btn.parent()[0].className
-          }</h4>
+          <div class="w-imgr_download_wrapper">
+            <button class="w-imgr_download_btn"><img src="${downloadIcon}"> Download as .ZIP</button>
+            <div class="w-imgr_progress_bar_wrapper w-imgr_progress_bar_hide">
+              <div class="w-imgr_progress_bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+          </div>
           <div class="w-imgr_modal_controls_wrapper">
             <button class="w-imgr_close_modal_btn">Close</button>
           </div>
@@ -319,6 +351,17 @@ const downloadZIP = function () {
         msg += ", current file = " + metadata.currentFile;
       }
       console.log(msg);
+      function updatePercent(percent) {
+        $(".w-imgr_progress_bar_wrapper").removeClass(
+          "w-imgr_progress_bar_hide"
+        );
+        $(".w-imgr_progress_bar_wrapper")
+          .children(".w-imgr_progress_bar")
+          .attr("aria-valuenow", percent)
+          .css("width", percent + "%");
+        console.log("update percent", percent);
+      }
+      updatePercent(metadata.percent | 0);
     })
     .then(function callback(blob) {
       saveAs(blob, "example.zip");
