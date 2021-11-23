@@ -3,6 +3,53 @@ import editIcon from "./images/edit.svg";
 import imageIcon from "./images/image.svg";
 import wimgrLogo from "./images/w-imgr-logo.svg";
 import loadIcon from "./images/loader.svg";
+import downloadIcon from "./images/download.svg";
+const JSZipUtils = require("jszip-utils");
+
+// get request needed to trigger image download counter MANDATORY for unsplash API usage
+const downloadTrigger = async function () {
+  let getImages = await fetch(
+    `https://api.unsplash.com/photos/IFxjDdqK_0U/download?ixid=MnwyNzU4MDl8MHwxfHNlYXJjaHwxfHxjYXQlM0V8ZW58MHx8fHwxNjM3NTczNDU5`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: "Client-ID cNlSmrvPU2c8D2g26mR8gtxLY5h0Z6WCcTBmbAsPW0Y",
+      },
+    }
+  );
+
+  let res = await getImages.json();
+  console.log("DOWNLOAD API RES", res);
+};
+
+const favoriteDownload = async function (imageURL) {
+  let getImages = await fetch(`${proxy}${imageURL}`, {
+    method: "GET",
+    headers: {
+      Authorization: "Client-ID cNlSmrvPU2c8D2g26mR8gtxLY5h0Z6WCcTBmbAsPW0Y",
+    },
+  });
+
+  let res = await getImages.json();
+  console.log("favorite download", res);
+};
+
+const starIcon = `<svg
+xmlns="http://www.w3.org/2000/svg"
+class="w-imgr_favorite"
+viewBox="0 0 512 512"
+>
+<title>Star</title>
+<path
+  d="M394 480a16 16 0 01-9.39-3L256 383.76 127.39 477a16 16 0 01-24.55-18.08L153 310.35 23 221.2a16 16 0 019-29.2h160.38l48.4-148.95a16 16 0 0130.44 0l48.4 149H480a16 16 0 019.05 29.2L359 310.35l50.13 148.53A16 16 0 01394 480z"
+/>
+</svg>`;
+
+const JSZip = require("jszip");
+const FileSaver = require("file-saver");
+
+// when downloading, filter out unique values of arr only so that the zip file contains only one image per file
+let favoriteImages = [];
 
 $("head").append(`<style>${styles.toString()}</style>`);
 $(document).ready(function () {
@@ -55,23 +102,42 @@ $(document).ready(function () {
       index++;
       idIndex++;
       const imgSrcThumb = imgArr[index].urls.thumb;
+      const imgSrcSmall = imgArr[index].urls.small;
       const imgSrcFull = imgArr[index].urls.full;
 
       const html = `
         <div class="w-imgr_image_wrapper">
-          <div class="w-imgr_unsplash_image" id="w-imgr_unsplash-img-${idIndex}"></div>
-          <div class="w-imgr_attribution_wrapper">
-            <h5 class="w-imgr_creator_name">Photo by:<a class="w-imgr_attribution_link" target="_blank" href="${imgArr[index].user.links.html}?utm_source=w-imgr&utm_medium=referral" >&nbsp${imgArr[index].user.name}</a></h5>
-            <h5 class="w-imgr_unsplash_link">
-              <a href="https://unsplash.com?utm_source=w-imgr&utm_medium=referral" target="_blank">Unsplash</a>
-            </h5>
-          </div>
-        </div>
+              <div class="w-imgr_unsplash_image" id="w-imgr_unsplash-img-${idIndex}">
+                <div class="w-imgr_favorite_wrapper">
+                  <div class="w-imgr_favorite_btn">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="w-imgr_favorite"
+                      viewBox="0 0 512 512"
+                    >
+                      <title>Star</title>
+                      <path
+                        d="M394 480a16 16 0 01-9.39-3L256 383.76 127.39 477a16 16 0 01-24.55-18.08L153 310.35 23 221.2a16 16 0 019-29.2h160.38l48.4-148.95a16 16 0 0130.44 0l48.4 149H480a16 16 0 019.05 29.2L359 310.35l50.13 148.53A16 16 0 01394 480z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <div class="w-imgr_attribution_wrapper">
+                  <h5 class="w-imgr_creator_name">Photo by:  
+                    <a class="w-imgr_attribution_link" target="_blank" href="${imgArr[index].user.links.html}?utm_source=w-imgr&utm_medium=referral" >${imgArr[index].user.name}</a>
+                  </h5>
+                  <h5 class="w-imgr_unsplash_link">
+                    <a href="https://unsplash.com?utm_source=w-imgr&utm_medium=referral" target="_blank">Unsplash</a>
+                  </h5>
+                </div>
+              </div>
+            </div>
         `;
+
       $(".w-imgr_image_container").append(html);
       $(`#w-imgr_unsplash-img-${idIndex}`).css(
         "background-image",
-        `url(${imgSrcThumb})`
+        `url(${imgSrcSmall})`
       );
       $(`#w-imgr_unsplash-img-${idIndex}`).attr("data", `${imgSrcFull}`);
     });
@@ -102,10 +168,38 @@ $(document).ready(function () {
           "background-image",
           `url(${$(this).attr("data")}`
         );
-        // img is ready to use
-        console.log(`width: ${img.width}, height: ${img.height}`);
       })();
     });
+
+    $(".w-imgr_favorite_btn").click(function (e) {
+      e.stopPropagation();
+
+      const imgSrc = $(this).parents(".w-imgr_unsplash_image").attr("data");
+
+      if (!$(this).hasClass("w-imgr_isfavorite_btn")) {
+        $(this).addClass("w-imgr_isfavorite_btn");
+        $(this).children(".w-imgr_favorite").addClass("w-imgr_isfavorite");
+        favoriteImages.push(imgSrc);
+      } else {
+        $(this).removeClass("w-imgr_isfavorite_btn");
+        $(this).children(".w-imgr_favorite").removeClass("w-imgr_isfavorite");
+        favoriteImages.splice(favoriteImages.indexOf(imgSrc), 1);
+      }
+      hasFavorites();
+    });
+
+    // Check for previously favorited images and toggle correct classes
+    favoriteImages.forEach((imgSrc) => {
+      $(".w-imgr_unsplash_image").each(function () {
+        if ($(this).attr("data") === imgSrc) {
+          $(this)
+            .find(".w-imgr_favorite_btn")
+            .addClass("w-imgr_isfavorite_btn");
+          $(this).find("svg").addClass("w-imgr_isfavorite");
+        }
+      });
+    });
+
     index = -1;
   };
 
@@ -147,19 +241,30 @@ $(document).ready(function () {
     });
   };
 
+  // Check if favorite images exist => show download btn or not
+  const hasFavorites = function () {
+    if (favoriteImages.length > 0) {
+      $(".w-imgr_download_btn").removeClass("w-imgr_download_btn_hide");
+    } else {
+      $(".w-imgr_download_btn").addClass("w-imgr_download_btn_hide");
+    }
+  };
+
   // opening the modal
   const openModal = function (btn) {
     console.log("clicked", btn);
     activeModal = true;
     const splashID = $(btn).attr("id").split("btn-")[1];
-    console.log(btn.parent());
     const modal = `
       <div class="w-imgr_modal_wrapper w-imgr_modal_animation">
         <div class="w-imgr_modal_header_wrapper">
           <img class="w-imgr_logo" src="${wimgrLogo}">
-          <h4 class="w-imgr_current_el">Editing: ${
-            btn.parent()[0].className
-          }</h4>
+          <div class="w-imgr_download_wrapper">
+            <button class="w-imgr_download_btn w-imgr_download_btn_hide"><img class"w-imgr_download_icon" src="${downloadIcon}">Download as .zip</button>
+            <div class="w-imgr_progress_bar_wrapper w-imgr_progress_bar_hide">
+              <div class="w-imgr_progress_bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+          </div>
           <div class="w-imgr_modal_controls_wrapper">
             <button class="w-imgr_close_modal_btn">Close</button>
           </div>
@@ -191,7 +296,12 @@ $(document).ready(function () {
       loadImages($(".w-imgr_search_bar").val(), splashID);
     });
 
+    hasFavorites();
+
     closeModal();
+    $(".w-imgr_download_btn").click(function () {
+      downloadZIP();
+    });
   };
 
   // when other w-imgr btn is pressed modal closes and removed, and new modal is created
@@ -207,4 +317,75 @@ $(document).ready(function () {
       console.log(editIcon);
     }
   });
+  //$(".w-imgr_favorite").css("background-image", `url("${favoriteIcon}")`);
 });
+
+// .ZIP logic
+
+const downloadZIP = function () {
+  console.log("download btn clicked");
+
+  const Promise = window.Promise;
+  if (!Promise) {
+    Promise = JSZip.external.Promise;
+  }
+
+  /**
+   * Fetch the content and return the associated promise.
+   * @param {String} url the url of the content to fetch.
+   * @return {Promise} the promise containing the data.
+   */
+  function urlToPromise(url) {
+    return new Promise(function (resolve, reject) {
+      JSZipUtils.getBinaryContent(url, function (err, data) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(data);
+        }
+      });
+    });
+  }
+
+  const zip = new JSZip();
+
+  // find every checked item
+  favoriteImages.forEach((image) => {
+    //var filename = image.replace(/.*\//g, "");
+    const filename = `${image}.jpg`;
+    zip.file(filename, urlToPromise(image), { binary: true });
+  });
+
+  // when everything has been downloaded => trigger download
+  zip
+    .generateAsync({ type: "blob" }, function updateCallback(metadata) {
+      let msg = "progression : " + metadata.percent.toFixed(2) + " %";
+      if (metadata.currentFile) {
+        msg += ", current file = " + metadata.currentFile;
+      }
+      console.log(msg);
+      function updatePercent(percent) {
+        $(".w-imgr_progress_bar_wrapper").removeClass(
+          "w-imgr_progress_bar_hide"
+        );
+        $(".w-imgr_download_btn").addClass("w-imgr_download_btn_hide");
+        $(".w-imgr_progress_bar_wrapper")
+          .children(".w-imgr_progress_bar")
+          .attr("aria-valuenow", percent)
+          .css("width", percent + "%");
+        console.log("update percent", percent);
+        if (percent === 100) {
+          $(".w-imgr_progress_bar_wrapper").addClass(
+            "w-imgr_progress_bar_hide"
+          );
+          $(".w-imgr_download_btn").removeClass("w-imgr_download_btn_hide");
+        }
+      }
+      updatePercent(metadata.percent | 0);
+    })
+    .then(function callback(blob) {
+      saveAs(blob, "example.zip");
+    });
+
+  return false;
+};
