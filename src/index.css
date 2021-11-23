@@ -474,7 +474,6 @@ a {
 .w-imgr_download_btn {
   display: flex;
   flex-direction: row;
-
   align-items: center;
   width: auto;
   height: auto;
@@ -493,6 +492,16 @@ a {
   color: white;
 }
 
+.w-imgr_download_icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+}
+
+.w-imgr_download_btn_hide {
+  display: none;
+}
+
 .w-imgr_progress_bar_hide {
   display: none;
 }
@@ -507,6 +516,6 @@ a {
 .w-imgr_progress_bar {
   width: 0%;
   height: 10px;
-  background-color: #10be59;
+  background-color: rgba(18, 56, 245, 1);
   border-radius: 20px;
 }

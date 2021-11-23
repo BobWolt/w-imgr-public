@@ -173,6 +173,7 @@ $(document).ready(function () {
 
     $(".w-imgr_favorite_btn").click(function (e) {
       e.stopPropagation();
+
       const imgSrc = $(this).parents(".w-imgr_unsplash_image").attr("data");
 
       if (!$(this).hasClass("w-imgr_isfavorite_btn")) {
@@ -184,6 +185,7 @@ $(document).ready(function () {
         $(this).children(".w-imgr_favorite").removeClass("w-imgr_isfavorite");
         favoriteImages.splice(favoriteImages.indexOf(imgSrc), 1);
       }
+      hasFavorites();
     });
 
     // Check for previously favorited images and toggle correct classes
@@ -239,6 +241,15 @@ $(document).ready(function () {
     });
   };
 
+  // Check if favorite images exist => show download btn or not
+  const hasFavorites = function () {
+    if (favoriteImages.length > 0) {
+      $(".w-imgr_download_btn").removeClass("w-imgr_download_btn_hide");
+    } else {
+      $(".w-imgr_download_btn").addClass("w-imgr_download_btn_hide");
+    }
+  };
+
   // opening the modal
   const openModal = function (btn) {
     console.log("clicked", btn);
@@ -249,7 +260,7 @@ $(document).ready(function () {
         <div class="w-imgr_modal_header_wrapper">
           <img class="w-imgr_logo" src="${wimgrLogo}">
           <div class="w-imgr_download_wrapper">
-            <button class="w-imgr_download_btn"><img src="${downloadIcon}"> Download as .ZIP</button>
+            <button class="w-imgr_download_btn w-imgr_download_btn_hide"><img class"w-imgr_download_icon" src="${downloadIcon}">Download as .zip</button>
             <div class="w-imgr_progress_bar_wrapper w-imgr_progress_bar_hide">
               <div class="w-imgr_progress_bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
             </div>
@@ -284,6 +295,8 @@ $(document).ready(function () {
     $(".w-imgr_more_btn").click(function () {
       loadImages($(".w-imgr_search_bar").val(), splashID);
     });
+
+    hasFavorites();
 
     closeModal();
     $(".w-imgr_download_btn").click(function () {
@@ -355,11 +368,18 @@ const downloadZIP = function () {
         $(".w-imgr_progress_bar_wrapper").removeClass(
           "w-imgr_progress_bar_hide"
         );
+        $(".w-imgr_download_btn").addClass("w-imgr_download_btn_hide");
         $(".w-imgr_progress_bar_wrapper")
           .children(".w-imgr_progress_bar")
           .attr("aria-valuenow", percent)
           .css("width", percent + "%");
         console.log("update percent", percent);
+        if (percent === 100) {
+          $(".w-imgr_progress_bar_wrapper").addClass(
+            "w-imgr_progress_bar_hide"
+          );
+          $(".w-imgr_download_btn").removeClass("w-imgr_download_btn_hide");
+        }
       }
       updatePercent(metadata.percent | 0);
     })
