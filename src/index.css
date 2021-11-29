@@ -82,9 +82,11 @@
   margin-left: auto;
   margin-right: auto;
   background-color: white;
-  box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+  /* box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px; */
+  box-shadow: 0 10px 20px 0 rgb(0 0 0 / 10%);
   padding: 24px 32px 24px 32px;
   z-index: 999;
+  border-radius: 16px;
 }
 
 .w-imgr_modal_header_wrapper {
@@ -196,7 +198,7 @@
 
 .w-imgr_image_wrapper_selected {
   border: 2px solid #ff4d56;
-  border-radius: 17px;
+  border-radius: 10px;
 }
 
 @keyframes w-imgr_image_mouseenter {
@@ -222,25 +224,12 @@
 }
 
 .w-imgr_unsplash_image {
-  width: 100%;
-  height: 150px;
-  border: none;
-  border-radius: 13px 13px 0px 0px;
-  background-color: white;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: cover;
-  cursor: pointer;
-}
-
-.w-imgr_unsplash_image {
   position: relative;
   width: 100%;
   height: 100%;
   border: none;
-  border-radius: 15px 15px 15px 15px;
+  border-radius: 8px;
   background-image: url("https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60");
-  background-color: blue;
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
@@ -248,22 +237,41 @@
 }
 
 .w-imgr_search_bar {
-  width: 1200px;
-  height: 30px;
-  border-radius: 10px;
-  border: none;
-  padding: 8px 32px 8px 32px;
-  margin-bottom: 0px;
-  font-size: 18px;
   font-family: "Open Sans", sans-serif;
-  color: rgb(27, 27, 27);
-  font-weight: bold;
-  box-shadow: rgba(18, 56, 245, 0.06) 0px 8px 24px;
+  -webkit-text-size-adjust: 100%;
+  --color: black;
+  --active: black;
+  --border: rgb(176, 176, 176);
+  --disabled: #9f9f9f;
+  -webkit-box-direction: normal;
+  box-sizing: border-box;
+  /* font: inherit; */
+  margin: 0;
+  line-height: normal;
+  width: 1200px;
+  height: auto;
+  min-height: 48px;
+  margin-top: 4px;
+  margin-bottom: 32px;
+  padding: 12px;
+  border: 2px solid #d1d1d1;
+  border-radius: 4px;
+  background-color: #fafafa;
+  font-size: 16px;
+  color: #757575;
+  font-weight: 400;
+  opacity: 1;
+}
+
+.w-imgr_search_bar:hover {
+  border: 2px solid rgb(0, 0, 0);
 }
 
 .w-imgr_search_bar:focus {
   font-family: "Open Sans", sans-serif;
   outline: none;
+  border: 2px solid rgb(0, 0, 0);
+  border-radius: 6px;
 }
 
 .w-imgr_search_bar:focus::placeholder {

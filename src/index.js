@@ -24,6 +24,7 @@ $(document).ready(function () {
 
   // state variable to watch active modal
   let activeModal = false;
+  let activeSearch = false;
 
   // index variable for updating Load More images
   let idIndex = -1;
@@ -107,7 +108,7 @@ $(document).ready(function () {
   const loadImages = async function (query) {
     console.log("pagenumber", pageNumber);
     let getImages = await fetch(
-      `${proxy}https://api.unsplash.com/search/photos?&page=${pageNumber}&per_page=30&query=${query}>`,
+      `${proxy}https://api.unsplash.com/search/photos?&orientation=landscape&page=${pageNumber}&per_page=30&query=${query}>`,
       {
         method: "GET",
         headers: { query: query, page: pageNumber },
@@ -125,11 +126,15 @@ $(document).ready(function () {
   // closing the modal
   const closeModalLogic = function () {
     pageNumber = 1;
+    $(".w-imgr_more_btn").css("display", "none");
     $(".w-imgr_modal_wrapper").removeClass("w-imgr_modal_animation");
     $(".w-imgr_modal_wrapper").addClass("w-imgr_modal_animation_remove");
-    activeModal = false;
+    //activeModal = false;
     setTimeout(function () {
-      $(".w-imgr_modal_wrapper").remove();
+      $(".w-imgr_modal_wrapper").css("display", "none");
+      $(".w-imgr_modal_wrapper").removeClass("w-imgr_modal_animation_remove");
+      $(".w-imgr_image_container").remove();
+      $(".w-imgr_search_bar").val("");
     }, 800);
   };
 
@@ -155,7 +160,7 @@ $(document).ready(function () {
             <button class="w-imgr_close_modal_btn" style="background-image: url(${closeIcon})"></button>
           </div>
         </div>
-        <div class="form_wrapper">
+        <div class="w-imgr_form_wrapper">
           <form id="w-imgr_form-image-search">
             <input
               class="w-imgr_search_bar"
@@ -176,20 +181,38 @@ $(document).ready(function () {
     $(".w-imgr_search_bar").focus();
     $("#w-imgr_form-image-search").submit(function (e) {
       e.preventDefault();
-      loadImages($(".w-imgr_search_bar").val());
-      $(".w-imgr_more_btn").css("display", "flex");
+      if (!activeSearch) {
+        activeSearch = true;
+        loadImages($(".w-imgr_search_bar").val());
+        $(".w-imgr_more_btn").css("display", "flex");
+      } else if (activeSearch) {
+        pageNumber = 1;
+        $(".w-imgr_image_container").remove();
+        createImgContainer();
+        loadImages($(".w-imgr_search_bar").val());
+      }
     });
 
-    const moreBtnHtml = `<button class="w-imgr_more_btn w-imgr_small_btn"><img class="w-imgr_btn_icon w-imgr_btn_icon_margin" src="${imageIcon}" />Load more</button>`;
+    const moreBtnHtml = `<button class="w-imgr_more_btn w-imgr_small_btn"><img class="w-imgr_btn_icon w-imgr_btn_icon_margin" src="${imageIcon}" />Meer afbeeldingen</button>`;
     $(".w-imgr_more_btn_wrapper").append(moreBtnHtml);
     $(".w-imgr_more_btn").click(function () {
       loadImages($(".w-imgr_search_bar").val());
     });
 
     closeModal();
-    $(".w-imgr_download_btn").click(function () {
-      downloadZIP();
-    });
+  };
+
+  const createImgContainer = function () {
+    const imageContainer = `<div class="w-imgr_image_container"></div>`;
+    //$(".w-imgr_modal_wrapper").append(imageContainer);
+    $(imageContainer).insertAfter(".w-imgr_form_wrapper");
+  };
+
+  const reOpenModal = function () {
+    $(".w-imgr_search_bar").focus();
+    $(".w-imgr_modal_wrapper").css("display", "flex");
+    $(".w-imgr_modal_wrapper").addClass("w-imgr_modal_animation");
+    createImgContainer();
   };
 
   // when other w-imgr btn is pressed modal closes and removed, and new modal is created
@@ -206,7 +229,11 @@ $(document).ready(function () {
     }
   });
   $("#w-imgr_start_btn").click(function () {
-    openModal();
+    if (!activeModal) {
+      openModal();
+    } else if (activeModal) {
+      reOpenModal();
+    }
   });
 
   $("#w-imgr_remove_btn").click(function () {
@@ -215,3 +242,9 @@ $(document).ready(function () {
     $(this).css("display", "none");
   });
 });
+
+// UPCOMING FIXES
+// Load more btn => dutch
+// image container styling
+// mobile styling
+// on new search remove current image container and replace with new one
