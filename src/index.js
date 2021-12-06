@@ -33,8 +33,8 @@ $(document).ready(function () {
 	const displayImages = function (res) {
 		const imgArr = res.results;
 
-		$('.w-imgr_search_bar').css('margin-bottom', '16px');
-		$('.w-imgr_image_container').css('opacity', '1');
+		//$('.w-imgr_image_container').css('display', 'flex');
+		$('.w-imgr_image_container').css('display', 'inline-grid');
 
 		// index variable for updating index served into imgArr
 		let index = -1;
@@ -49,7 +49,8 @@ $(document).ready(function () {
 			const html = `
         <div class="w-imgr_image_wrapper">
         <div class="w-imgr_unsplash_image" id="w-imgr_unsplash-img-${idIndex}">
-          <div class="w-imgr_select_btn" id="w-imgr_select_btn-${idIndex}" ><img class="w-imgr_select_icon" src="${checkIcon}"><h5 class="w-imgr_select_btn_text">Kies deze afbeelding</h5></div>
+		<div class="w-imgr_unsplash_image_cover"></div>
+          <div class="w-imgr_select_btn" id="w-imgr_select_btn-${idIndex}" ><img class="w-imgr_select_icon" src="${checkIcon}"><h5 class="w-imgr_select_btn_text">Selecteer afbeelding</h5></div>
                 <div class="w-imgr_attribution_wrapper">
                   <h5 class="w-imgr_creator_name">Photo by:  
                     <a class="w-imgr_attribution_link" target="_blank" href="${imgArr[index].user.links.html}?utm_source=w-imgr&utm_medium=referral" >${imgArr[index].user.name}</a>
@@ -89,7 +90,7 @@ $(document).ready(function () {
 					$('.w-imgr_select_btn').attr('id', '');
 					$(this).attr('id', 'w-imgr_selected_btn');
 					$('.w-imgr_select_btn').css('opacity', '0');
-					$('.w-imgr_select_btn_text').html('Kies afbeelding');
+					$('.w-imgr_select_btn_text').html('Selecteer afbeelding');
 					$(this)
 						.children('.w-imgr_select_btn_text')
 						.html('Afbeelding gekozen');
@@ -179,17 +180,17 @@ $(document).ready(function () {
 		$('.w-imgr_modal_wrapper').addClass('w-imgr_modal_animation_remove');
 		//activeModal = false;
 		setTimeout(function () {
+			$('.w-imgr_image_container').css('display', 'none');
 			$('.w-imgr_modal_wrapper').css('display', 'none');
 			$('.w-imgr_modal_wrapper').removeClass('w-imgr_modal_animation_remove');
-			$('.w-imgr_image_container').remove();
 			$('.w-imgr_search_bar').val('');
 			$('.w-imgr_modal_backdrop').css('display', 'none');
+			$('.w-imgr_image_container').remove();
 		}, 500);
 	};
 
 	// To attach to close btn on creation of modal
 	const closeModal = function () {
-		console.log('close modal');
 		$('.w-imgr_close_modal_btn_wrapper').click(function () {
 			$('.w-imgr_close_modal_btn_wrapper').removeClass(
 				'w-imgr_close_modal_btn_animation'
@@ -197,48 +198,54 @@ $(document).ready(function () {
 			$('body').css('overflow', 'auto');
 			closeModalLogic();
 		});
+		$('body').click(function (e) {
+			if (e.target === $('.w-imgr_modal_backdrop')[0]) {
+				$('body').css('overflow', 'auto');
+				closeModalLogic();
+			}
+		});
 	};
 
-	// opening the modal
 	const openModal = function (btn) {
 		activeModal = true;
 		const modal = `
     <div class="w-imgr_modal_backdrop">
       <div class="w-imgr_modal_wrapper w-imgr_modal_animation">
         <div class="w-imgr_modal_header_wrapper">
+		<div class="w-imgr_modal_header_filler"></div>
           <div class="w-imgr_heading_wrapper">
-            <img class="w-imgr_search_icon" src="${searchIcon}">
-            <h2 class="w-imgr_heading_title">Zoek voor een afbeelding</h2>
+            <h3 class="w-imgr_heading_title">Zoek voor een afbeelding</h3>
           </div>
           <div class="w-imgr_modal_controls_wrapper">
             <div class="w-imgr_close_modal_btn_wrapper">
-              <h5 class="w-imgr_close_modal_text">Sluiten</h5>
-              <button class="w-imgr_close_modal_btn" style="background-image: url(${closeIcon})"></button>
+			  <img class="w-imgr_close_modal_btn" src="${closeIcon}">
             </div>
           </div>
         </div>
-        <div class="w-imgr_form_wrapper">
-          <form id="w-imgr_form-image-search">
-            <input
-              class="w-imgr_search_bar"
-              type="text"
-              inputmode="search"
-              placeholder="bijv. 'Neighbourhood'"
-            />
-          </form>
-        </div>
+
+		<div class="w-imgr_form_wrapper">
+				<form id="w-imgr_form-image-search">
+					<div class="w-imgr_search_bar_wrapper">
+							<img class="w-imgr_search_icon" src="${searchIcon}" />
+						<input
+							class="w-imgr_search_bar"
+							type="text"
+							inputmode="search"
+							placeholder="bijv. 'Neighbourhood'"
+							background="url(${searchIcon})"
+						/>
+					</div>
+				</form>
+			</div>
+
         <div class="w-imgr_image_container"></div>
         <div class="w-imgr_more_btn_wrapper"></div>
-        <div class="w-imgr_poweredby_wrapper">
-            <h5 class="w-imgr_poweredby_heading">Powered by:</h5>
-            <img class="w-imgr_logo" src="${wimgrLogo}">
-          </div>
       </div>
     </div>
       `;
 		$('body').append(modal);
 		$('body').css('overflow', 'hidden');
-		//$('.w-imgr_search_bar').focus();
+		$('.w-imgr_search_bar').focus();
 		$('#w-imgr_form-image-search').submit(function (e) {
 			e.preventDefault();
 			if (!activeSearch) {
@@ -254,7 +261,7 @@ $(document).ready(function () {
 			}
 		});
 
-		const moreBtnHtml = `<button class="w-imgr_more_btn w-imgr_small_btn"><img class="w-imgr_btn_icon w-imgr_btn_icon_margin" src="${imageIcon}" />Meer afbeeldingen</button>`;
+		const moreBtnHtml = `<button class="w-imgr_more_btn">Laad meer</button>`;
 		$('.w-imgr_more_btn_wrapper').append(moreBtnHtml);
 		$('.w-imgr_more_btn').click(function () {
 			loadImages($('.w-imgr_search_bar').val());
@@ -269,27 +276,14 @@ $(document).ready(function () {
 	};
 
 	const reOpenModal = function () {
-		//$('.w-imgr_search_bar').focus();
 		$('.w-imgr_modal_wrapper').css('display', 'flex');
 		$('.w-imgr_modal_wrapper').addClass('w-imgr_modal_animation');
 		createImgContainer();
 		$('body').css('overflow', 'hidden');
-		$('.w-imgr_modal_backdrop').css('display', 'block');
+		$('.w-imgr_modal_backdrop').css('display', 'flex');
+		$('.w-imgr_search_bar').focus();
 	};
 
-	// when other w-imgr btn is pressed modal closes and removed, and new modal is created
-	$('.w-imgr_splash_btn').click(function () {
-		const currentBtn = $(this);
-		if (activeModal) {
-			closeModalLogic();
-			setTimeout(function () {
-				openModal(currentBtn);
-			}, 800);
-		} else {
-			openModal(currentBtn);
-			console.log(editIcon);
-		}
-	});
 	$('#w-imgr_start_btn').click(function () {
 		if (!activeModal) {
 			openModal();
@@ -306,5 +300,5 @@ $(document).ready(function () {
 });
 
 // UPCOMING FIXES
-// image container styling
-// mobile styling
+// fix SELECTEER btn | remove and use img wrapper as clickable
+// apply select btn show/hide logic to img attribution
