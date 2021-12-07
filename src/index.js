@@ -1,11 +1,8 @@
 import styles from './index.css';
-import editIcon from './images/edit.svg';
-import imageIcon from './images/image.svg';
-import wimgrLogo from './images/w-imgr-logo.svg';
 import loadIcon from './images/loader.svg';
 import closeIcon from './images/x.svg';
 import searchIcon from './images/search.svg';
-import checkIcon from './images/checkmark.svg';
+import selectedIcon from './images/selected.svg';
 
 // get request needed to trigger image download counter MANDATORY for unsplash API usage
 const downloadTrigger = async function (url) {
@@ -26,6 +23,7 @@ $(document).ready(function () {
 	// state variable to watch active modal
 	let activeModal = false;
 	let activeSearch = false;
+	let activeMoreBtn = false;
 
 	// index variable for updating Load More images
 	let idIndex = -1;
@@ -60,7 +58,11 @@ $(document).ready(function () {
             </div>
         `;
 
-			$('.w-imgr_image_container').append(html);
+			/* $('.w-imgr_image_container').append(html); */
+			$(html).insertBefore($('.w-imgr_image_container_observer'));
+
+			startObserver();
+
 			$(`#w-imgr_unsplash-img-${idIndex}`).css(
 				'background-image',
 				`url(${imgSrcSmall})`
@@ -80,8 +82,16 @@ $(document).ready(function () {
 				'w-imgr_image_wrapper_selected'
 			);
 
+			// Remove before creating new one
+			$('.w-imgr_image_selected_icon').remove();
+
 			// WHEN IMAGED SELECTED APPLY STUFF HERE
 			$(this).addClass('w-imgr_image_wrapper_selected');
+			$(this)
+				.children('.w-imgr_unsplash_image')
+				.append(
+					`<img class='w-imgr_image_selected_icon' src="${selectedIcon}"/>`
+				);
 
 			(async () => {
 				const img = new Image();
@@ -92,9 +102,7 @@ $(document).ready(function () {
 						.addClass('w-imgr_loading_animation')
 						.css('background-image', `url(${loadIcon})`)
 				);
-				$(`#w-imgr_preview_image`).append(
-					$('<h5>Loading</h5>').addClass('w-imgr_loading_text')
-				);
+
 				await img.decode();
 				$('.w-imgr_loading_animation').remove();
 				$('.w-imgr_loading_text').remove();
@@ -103,12 +111,49 @@ $(document).ready(function () {
 			$('#w-imgr_remove_btn').css('display', 'block');
 		});
 
+		if (activeMoreBtn) {
+			let scrollPosition = $('.w-imgr_image_container').scrollTop();
+			//$('.w-imgr_image_container').scrollTop(scrollPosition + 100);
+			$('.w-imgr_image_container').animate(
+				{ scrollTop: scrollPosition + 100 },
+				400
+			);
+		}
+
 		index = -1;
 	};
 
+	// Intersection observer for inside image container - show load btn or not
+	const observerCallback = function (entries) {
+		entries.forEach(function (entry) {
+			if (entry.isIntersecting) {
+				$('.w-imgr_more_btn_wrapper').addClass('w-imgr_more_btn_animation');
+			} else if (!entry.isIntersecting) {
+				$('.w-imgr_more_btn_wrapper').removeClass('w-imgr_more_btn_animation');
+			}
+		});
+	};
+
+	let observer = new IntersectionObserver(observerCallback, {
+		root: document.querySelector('.w-imgr_image_container'),
+		rootMargin: '200%',
+		threshold: 0.1,
+	});
+
+	const startObserver = function () {
+		const target = document.querySelector('.w-imgr_image_container_observer');
+		observer.observe(target);
+	};
+
+	const stopObserver = function () {
+		const target = document.querySelector('.w-imgr_image_container_observer');
+		observer.unobserve(target);
+	};
+
+	// Loading animation for API call getting + loading images
 	const displayLoading = function () {
 		const html = `<div class="w-imgr_api_loader"></div>`;
-		$('.w-imgr_modal_wrapper').append(html);
+		$(html).insertBefore('.w-imgr_more_btn');
 	};
 
 	const hideLoading = function () {
@@ -143,6 +188,8 @@ $(document).ready(function () {
 	// closing the modal
 	const closeModalLogic = function () {
 		pageNumber = 1;
+		activeMoreBtn = false;
+
 		$('.w-imgr_more_btn').css('display', 'none');
 		$('.w-imgr_modal_wrapper').removeClass('w-imgr_modal_animation');
 		$('.w-imgr_modal_wrapper').addClass('w-imgr_modal_animation_remove');
@@ -159,6 +206,7 @@ $(document).ready(function () {
 
 	// To attach to close btn on creation of modal
 	const closeModal = function () {
+		stopObserver();
 		$('.w-imgr_close_modal_btn_wrapper').click(function () {
 			$('.w-imgr_close_modal_btn_wrapper').removeClass(
 				'w-imgr_close_modal_btn_animation'
@@ -206,7 +254,9 @@ $(document).ready(function () {
 				</form>
 			</div>
 
-        <div class="w-imgr_image_container"></div>
+        <div class="w-imgr_image_container">
+			<div class="w-imgr_image_container_observer"></div>
+		</div>
         <div class="w-imgr_more_btn_wrapper"></div>
       </div>
     </div>
@@ -232,6 +282,7 @@ $(document).ready(function () {
 		const moreBtnHtml = `<button class="w-imgr_more_btn">Laad meer</button>`;
 		$('.w-imgr_more_btn_wrapper').append(moreBtnHtml);
 		$('.w-imgr_more_btn').click(function () {
+			activeMoreBtn = true;
 			loadImages($('.w-imgr_search_bar').val());
 		});
 
@@ -239,7 +290,10 @@ $(document).ready(function () {
 	};
 
 	const createImgContainer = function () {
-		const imageContainer = `<div class="w-imgr_image_container"></div>`;
+		const imageContainer = `
+		<div class="w-imgr_image_container">
+			<div class="w-imgr_image_container_observer"></div>	
+		</div>`;
 		$(imageContainer).insertAfter('.w-imgr_form_wrapper');
 	};
 
@@ -268,5 +322,5 @@ $(document).ready(function () {
 });
 
 // UPCOMING FIXES
-// fix SELECTEER btn | remove and use img wrapper as clickable
-// apply select btn show/hide logic to img attribution
+// Store current selected image in variable, when modal closed => trigger download API route with image url from variable
+// Current version for mobile
