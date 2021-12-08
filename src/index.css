@@ -545,12 +545,7 @@
 	font-size: 0.8rem;
 	color: white;
 	margin: 0;
-}
-
-.w-imgr_btn_icon {
-	width: 16px;
-	height: 16px;
-	background-image: url('./images/edit.svg');
+	padding-right: 4px;
 }
 
 .w-imgr_btn_icon_margin {
