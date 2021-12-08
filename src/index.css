@@ -455,7 +455,6 @@
 	--disabled: #9f9f9f;
 	-webkit-box-direction: normal;
 	box-sizing: border-box;
-	/* font: inherit; */
 	margin: 0;
 	line-height: normal;
 	width: 100%;
@@ -467,7 +466,7 @@
 	border: 2px solid #d1d1d1;
 	border-radius: 4px;
 	background-color: #fafafa;
-	font-size: 1.2rem;
+	font-size: 1rem;
 	color: #757575;
 	font-weight: 400;
 	opacity: 1;
@@ -537,15 +536,15 @@
 	font-weight: normal;
 	font-size: 0.8rem;
 	color: white;
-	margin: 4px 0px 0px 0px;
+	margin: 0;
 }
 
 .w-imgr_creator_name {
 	font-family: 'Inter', sans-serif;
 	font-weight: normal;
-	margin: 0;
 	font-size: 0.8rem;
 	color: white;
+	margin: 0;
 }
 
 .w-imgr_btn_icon {
