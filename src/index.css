@@ -485,6 +485,7 @@
 	outline: none;
 	border: none;
 	margin: 0;
+	text-transform: capitalize;
 }
 
 .w-imgr_search_icon {
