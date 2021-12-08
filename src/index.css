@@ -669,6 +669,7 @@
 	}
 	.w-imgr_modal_wrapper {
 		width: 95%;
+		max-height: 95vh;
 		padding: 16px 16px 16px 16px;
 	}
 	.w-imgr_image_container {
