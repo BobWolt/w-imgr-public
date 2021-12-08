@@ -4,29 +4,29 @@ import closeIcon from './images/x.svg';
 import searchIcon from './images/search.svg';
 import selectedIcon from './images/selected.svg';
 
-// get request needed to trigger image download counter MANDATORY for unsplash API usage
-const downloadTrigger = async function (url) {
-	let downloadImage = await fetch(`${proxy}${imageURL}`, {
-		method: 'GET',
-	});
-
-	let res = await downloadImage.json();
-	console.log('DOWNLOAD API RES', res);
-};
-
+// Load css styles
 $('head').append(`<style>${styles.toString()}</style>`);
-$(document).ready(function () {
-	console.log('ready');
 
+$(document).ready(function () {
 	const proxy = 'https://w-imgr-proxy.herokuapp.com/';
 
 	// state variable to watch active modal
 	let activeModal = false;
 	let activeSearch = false;
-	let activeMoreBtn = false;
+	let downloadURL = '';
 
 	// index variable for updating Load More images
 	let idIndex = -1;
+
+	// get request needed to trigger image download counter MANDATORY for unsplash API usage
+	const downloadTrigger = async function (url) {
+		console.log(url);
+		let downloadImage = await fetch(`${proxy}${url}`, {
+			method: 'GET',
+		});
+
+		let res = await downloadImage.json();
+	};
 
 	const displayImages = function (res) {
 		const imgArr = res.results;
@@ -41,6 +41,7 @@ $(document).ready(function () {
 			idIndex++;
 			const imgSrcSmall = imgArr[index].urls.small;
 			const imgSrcFull = imgArr[index].urls.full;
+			const imgSrcDownload = imgArr[index].links.download_location;
 
 			const html = `
         <div class="w-imgr_image_wrapper">
@@ -48,7 +49,7 @@ $(document).ready(function () {
 		<div class="w-imgr_unsplash_image_cover"></div>
                 <div class="w-imgr_attribution_wrapper" id="w=imgr_attribution_wrapper-${idIndex}">
                   <h5 class="w-imgr_creator_name">Photo by:  
-                    <a class="w-imgr_attribution_link" target="_blank" href="${imgArr[index].user.links.html}?utm_source=w-imgr&utm_medium=referral" >${imgArr[index].user.name}</a>
+                    <a class="w-imgr_attribution_link" target="_blank" data="${imgSrcDownload}" href="${imgArr[index].user.links.html}?utm_source=w-imgr&utm_medium=referral" >${imgArr[index].user.name}</a>
                   </h5>
                   <h5 class="w-imgr_unsplash_link">
                     <a class="w-imgr_attribution_link" href="https://unsplash.com?utm_source=w-imgr&utm_medium=referral" target="_blank">Unsplash</a>
@@ -72,6 +73,10 @@ $(document).ready(function () {
 
 		// when image is selected load in hd quality image from data attr as background-image
 		$('.w-imgr_image_wrapper').click(function () {
+			downloadURL = $(this)
+				.children($('.w-imgr_attribution_link'))
+				.attr('data');
+
 			$('.w-imgr_close_modal_btn_wrapper').addClass(
 				'w-imgr_close_modal_btn_animation'
 			);
@@ -111,15 +116,6 @@ $(document).ready(function () {
 			$('#w-imgr_remove_btn').css('display', 'block');
 		});
 
-		if (activeMoreBtn) {
-			let scrollPosition = $('.w-imgr_image_container').scrollTop();
-			//$('.w-imgr_image_container').scrollTop(scrollPosition + 100);
-			$('.w-imgr_image_container').animate(
-				{ scrollTop: scrollPosition + 100 },
-				400
-			);
-		}
-
 		index = -1;
 	};
 
@@ -128,8 +124,11 @@ $(document).ready(function () {
 		entries.forEach(function (entry) {
 			if (entry.isIntersecting) {
 				$('.w-imgr_more_btn_wrapper').addClass('w-imgr_more_btn_animation');
+				$('.w-imgr_more_btn').children($('span')).text('Aan het laden...');
+				loadImages($('.w-imgr_search_bar').val());
 			} else if (!entry.isIntersecting) {
-				$('.w-imgr_more_btn_wrapper').removeClass('w-imgr_more_btn_animation');
+				$('.w-imgr_more_btn_wrapper').addClass('w-imgr_more_btn_animation');
+				$('.w-imgr_more_btn').children($('span')).text('Scroll voor meer');
 			}
 		});
 	};
@@ -165,6 +164,8 @@ $(document).ready(function () {
 	const loadImages = async function (query) {
 		console.log('pagenumber', pageNumber);
 
+		$('.w-imgr_image_container').css('height', '208px');
+
 		displayLoading();
 
 		let getImages = await fetch(
@@ -180,6 +181,15 @@ $(document).ready(function () {
 
 		hideLoading();
 
+		// UX for when there are no more images to load
+		if (res.results.length < 30) {
+			stopObserver();
+			$('.w-imgr_more_btn').children($('span')).text('Geen afbeeldingen meer');
+		} else if (res.results.length === 0) {
+			stopObserver();
+			$('.w-imgr_more_btn').children($('span')).text('Geen afbeeldingen meer');
+		}
+
 		displayImages(res);
 		console.log('images amount: ', $('.w-imgr_unsplash_image').length);
 		pageNumber++;
@@ -188,7 +198,11 @@ $(document).ready(function () {
 	// closing the modal
 	const closeModalLogic = function () {
 		pageNumber = 1;
-		activeMoreBtn = false;
+
+		// Trigger unsplash 'download'
+		if (downloadURL) {
+			downloadTrigger(downloadURL);
+		}
 
 		$('.w-imgr_more_btn').css('display', 'none');
 		$('.w-imgr_modal_wrapper').removeClass('w-imgr_modal_animation');
@@ -240,19 +254,28 @@ $(document).ready(function () {
         </div>
 
 		<div class="w-imgr_form_wrapper">
-				<form id="w-imgr_form-image-search">
-					<div class="w-imgr_search_bar_wrapper">
+			<form id="w-imgr_form-image-search">
+				<div class="w-imgr_search_bar_wrapper">
 							<img class="w-imgr_search_icon" src="${searchIcon}" />
-						<input
-							class="w-imgr_search_bar"
-							type="text"
-							inputmode="search"
-							placeholder="bijv. 'Neighbourhood'"
-							background="url(${searchIcon})"
-						/>
-					</div>
-				</form>
+					<input
+						class="w-imgr_search_bar"
+						type="text"
+						inputmode="search"
+						placeholder="bijv. 'Neighbourhood'"
+						background="url(${searchIcon})"
+					/>
+				</div>
+			</form>
+
+			<div class="w-imgr_suggestion_container">
+				<div class="w-imgr_suggestions_wrapper">
+					<span class="w-imgr_suggestion_text_title">Andere suggesties:</span>
+					<span class="w-imgr_suggestion_text">Buildings</span>
+					<span class="w-imgr_suggestion_text">Homes</span>
+					<span class="w-imgr_suggestion_text">Real estate</span>
+				</div>
 			</div>
+		</div>
 
         <div class="w-imgr_image_container">
 			<div class="w-imgr_image_container_observer"></div>
@@ -272,19 +295,29 @@ $(document).ready(function () {
 				$('.w-imgr_more_btn').css('display', 'flex');
 			} else if (activeSearch) {
 				pageNumber = 1;
-				$('.w-imgr_image_container').remove();
-				createImgContainer();
+				$('.w-imgr_image_container').find($('.w-imgr_image_wrapper')).remove();
 				loadImages($('.w-imgr_search_bar').val());
 				$('.w-imgr_more_btn').css('display', 'flex');
 			}
 		});
 
-		const moreBtnHtml = `<button class="w-imgr_more_btn">Laad meer</button>`;
-		$('.w-imgr_more_btn_wrapper').append(moreBtnHtml);
-		$('.w-imgr_more_btn').click(function () {
-			activeMoreBtn = true;
-			loadImages($('.w-imgr_search_bar').val());
+		$('.w-imgr_suggestion_text').click(function () {
+			if (!activeSearch) {
+				activeSearch = true;
+				$('.w-imgr_search_bar').val($(this).text());
+				loadImages($('.w-imgr_search_bar').val());
+				$('.w-imgr_more_btn').css('display', 'flex');
+			} else if (activeSearch) {
+				pageNumber = 1;
+				$('.w-imgr_image_container').find($('.w-imgr_image_wrapper')).remove();
+				$('.w-imgr_search_bar').val($(this).text());
+				loadImages($('.w-imgr_search_bar').val());
+				$('.w-imgr_more_btn').css('display', 'flex');
+			}
 		});
+
+		const moreBtnHtml = `<button class="w-imgr_more_btn"><span class="w-imgr_more_btn_text">Scroll voor meer</span></button>`;
+		$('.w-imgr_more_btn_wrapper').append(moreBtnHtml);
 
 		closeModal();
 	};
@@ -322,5 +355,4 @@ $(document).ready(function () {
 });
 
 // UPCOMING FIXES
-// Store current selected image in variable, when modal closed => trigger download API route with image url from variable
 // Current version for mobile
