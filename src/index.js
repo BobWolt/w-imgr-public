@@ -20,7 +20,6 @@ $(document).ready(function () {
 
 	// get request needed to trigger image download counter MANDATORY for unsplash API usage
 	const downloadTrigger = async function (url) {
-		console.log(url);
 		let downloadImage = await fetch(`${proxy}${url}`, {
 			method: 'GET',
 		});
@@ -33,6 +32,26 @@ $(document).ready(function () {
 
 		$('.w-imgr_image_container').css('display', 'inline-grid');
 
+		console.log('res.results', res.results.length);
+		// UX for when there are no more images to load
+		if (res.results.length === 30) {
+			$('.w-imgr_more_btn').children($('span')).text('Scroll voor meer');
+			$('.w-imgr_image_container').css('height', '208px');
+		} else if (res.results.length < 30 && res.total_pages !== 0) {
+			console.log('less than 30');
+			stopObserver();
+			$('.w-imgr_image_container').css('height', '208px');
+			$('.w-imgr_more_btn').children($('span')).text('Geen afbeeldingen meer');
+		} else if (res.total_pages === 0) {
+			console.log('no results');
+			stopObserver();
+			$('.w-imgr_more_btn_wrapper').addClass('w-imgr_more_btn_animation');
+			$('.w-imgr_image_container').css('height', '0px');
+			$('.w-imgr_more_btn')
+				.children($('span'))
+				.text('Geen afbeeldingen gevonden');
+		}
+
 		// index variable for updating index served into imgArr
 		let index = -1;
 
@@ -44,20 +63,20 @@ $(document).ready(function () {
 			const imgSrcDownload = imgArr[index].links.download_location;
 
 			const html = `
-        <div class="w-imgr_image_wrapper">
-        <div class="w-imgr_unsplash_image" id="w-imgr_unsplash-img-${idIndex}">
-		<div class="w-imgr_unsplash_image_cover"></div>
-                <div class="w-imgr_attribution_wrapper" id="w=imgr_attribution_wrapper-${idIndex}">
-                  <h5 class="w-imgr_creator_name">Photo by:  
-                    <a class="w-imgr_attribution_link" target="_blank" data="${imgSrcDownload}" href="${imgArr[index].user.links.html}?utm_source=w-imgr&utm_medium=referral" >${imgArr[index].user.name}</a>
-                  </h5>
-                  <h5 class="w-imgr_unsplash_link">
-                    <a class="w-imgr_attribution_link" href="https://unsplash.com?utm_source=w-imgr&utm_medium=referral" target="_blank">Unsplash</a>
-                  </h5>
-                </div>
-              </div>
-            </div>
-        `;
+				<div class="w-imgr_image_wrapper">
+					<div class="w-imgr_unsplash_image" id="w-imgr_unsplash-img-${idIndex}">
+						<div class="w-imgr_unsplash_image_cover"></div>
+						<div class="w-imgr_attribution_wrapper" id="w=imgr_attribution_wrapper-${idIndex}">
+							<h5 class="w-imgr_creator_name">Photo by:  
+								<a class="w-imgr_attribution_link" target="_blank" data="${imgSrcDownload}" href="${imgArr[index].user.links.html}?utm_source=w-imgr&utm_medium=referral" >${imgArr[index].user.name}</a>
+							</h5>
+							<h5 class="w-imgr_unsplash_link">
+								<a class="w-imgr_attribution_link" href="https://unsplash.com?utm_source=w-imgr&utm_medium=referral" target="_blank">Unsplash</a>
+							</h5>
+						</div>
+					</div>
+				</div>
+       			 `;
 
 			/* $('.w-imgr_image_container').append(html); */
 			$(html).insertBefore($('.w-imgr_image_container_observer'));
@@ -73,9 +92,7 @@ $(document).ready(function () {
 
 		// when image is selected load in hd quality image from data attr as background-image
 		$('.w-imgr_image_wrapper').click(function () {
-			downloadURL = $(this)
-				.children($('.w-imgr_attribution_link'))
-				.attr('data');
+			downloadURL = $(this).find($('.w-imgr_attribution_link')).attr('data');
 
 			$('.w-imgr_close_modal_btn_wrapper').addClass(
 				'w-imgr_close_modal_btn_animation'
@@ -152,7 +169,8 @@ $(document).ready(function () {
 	// Loading animation for API call getting + loading images
 	const displayLoading = function () {
 		const html = `<div class="w-imgr_api_loader"></div>`;
-		$(html).insertBefore('.w-imgr_more_btn');
+		//$(html).insertBefore('.w-imgr_more_btn');
+		$(html).insertBefore('.w-imgr_more_btn_wrapper');
 	};
 
 	const hideLoading = function () {
@@ -163,8 +181,6 @@ $(document).ready(function () {
 	// Get images on search query
 	const loadImages = async function (query) {
 		console.log('pagenumber', pageNumber);
-
-		$('.w-imgr_image_container').css('height', '208px');
 
 		displayLoading();
 
@@ -180,15 +196,6 @@ $(document).ready(function () {
 		console.log('response', res);
 
 		hideLoading();
-
-		// UX for when there are no more images to load
-		if (res.results.length < 30) {
-			stopObserver();
-			$('.w-imgr_more_btn').children($('span')).text('Geen afbeeldingen meer');
-		} else if (res.results.length === 0) {
-			stopObserver();
-			$('.w-imgr_more_btn').children($('span')).text('Geen afbeeldingen meer');
-		}
 
 		displayImages(res);
 		console.log('images amount: ', $('.w-imgr_unsplash_image').length);
@@ -280,7 +287,9 @@ $(document).ready(function () {
         <div class="w-imgr_image_container">
 			<div class="w-imgr_image_container_observer"></div>
 		</div>
-        <div class="w-imgr_more_btn_wrapper"></div>
+		<div class="w-imgr_loader_more_wrapper">
+			<div class="w-imgr_more_btn_wrapper"></div>
+		</div>	
       </div>
     </div>
       `;
@@ -304,11 +313,13 @@ $(document).ready(function () {
 		$('.w-imgr_suggestion_text').click(function () {
 			if (!activeSearch) {
 				activeSearch = true;
+				$('.w-imgr_more_btn').children($('span')).text('Aan het laden...');
 				$('.w-imgr_search_bar').val($(this).text());
 				loadImages($('.w-imgr_search_bar').val());
 				$('.w-imgr_more_btn').css('display', 'flex');
 			} else if (activeSearch) {
 				pageNumber = 1;
+				$('.w-imgr_more_btn').children($('span')).text('Aan het laden...');
 				$('.w-imgr_image_container').find($('.w-imgr_image_wrapper')).remove();
 				$('.w-imgr_search_bar').val($(this).text());
 				loadImages($('.w-imgr_search_bar').val());
@@ -354,5 +365,4 @@ $(document).ready(function () {
 	});
 });
 
-// UPCOMING FIXES
-// Current version for mobile
+// QUERY ERROR => on results === 0 => show error message and prevent image_container from growing => stay same height

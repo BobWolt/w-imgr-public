@@ -237,10 +237,9 @@
 }
 
 .w-imgr_api_loader {
-	position: absolute;
-	left: -16px;
 	width: 12px;
 	height: 12px;
+	margin-right: 4px;
 	border: 3px solid #ff4d56;
 	border-bottom-color: white;
 	border-radius: 50%;
@@ -559,13 +558,23 @@
 	margin: 0;
 }
 
+.w-imgr_loader_more_wrapper {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	height: auto;
+	margin-top: 8px;
+	opacity: 1;
+}
+
 .w-imgr_more_btn_wrapper {
 	position: relative;
 	display: flex;
 	flex-direction: row;
 	align-items: center;
 	justify-content: flex-start;
-	margin-top: 8px;
 	opacity: 0;
 }
 
