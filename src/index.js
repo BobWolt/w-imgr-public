@@ -31,6 +31,7 @@ $(document).ready(function () {
 		const imgArr = res.results;
 
 		$('.w-imgr_image_container').css('display', 'inline-grid');
+		$('.w-imgr_search_error_msg').remove();
 
 		console.log('res.results', res.results.length);
 		// UX for when there are no more images to load
@@ -211,6 +212,9 @@ $(document).ready(function () {
 			downloadTrigger(downloadURL);
 		}
 
+		// Reset loading text
+		$('.w-imgr_more_btn').children($('span')).text('Aan het laden...');
+
 		$('.w-imgr_more_btn').css('display', 'none');
 		$('.w-imgr_modal_wrapper').removeClass('w-imgr_modal_animation');
 		$('.w-imgr_modal_wrapper').addClass('w-imgr_modal_animation_remove');
@@ -261,9 +265,9 @@ $(document).ready(function () {
         </div>
 
 		<div class="w-imgr_form_wrapper">
-			<form id="w-imgr_form-image-search">
+			<form id="w-imgr_form-image-search">			
 				<div class="w-imgr_search_bar_wrapper">
-							<img class="w-imgr_search_icon" src="${searchIcon}" />
+					<img class="w-imgr_search_icon" src="${searchIcon}" />
 					<input
 						class="w-imgr_search_bar"
 						type="text"
@@ -272,7 +276,7 @@ $(document).ready(function () {
 						background="url(${searchIcon})"
 					/>
 				</div>
-			</form>
+				</form>
 
 			<div class="w-imgr_suggestion_container">
 				<div class="w-imgr_suggestions_wrapper">
@@ -293,21 +297,37 @@ $(document).ready(function () {
       </div>
     </div>
       `;
+		const errorMsg = `<span class="w-imgr_search_error_msg">*Gebruik alleen letters A-Z voor het zoeken</span>`;
 		$('body').append(modal);
 		$('body').css('overflow', 'hidden');
 		$('.w-imgr_search_bar').focus();
 		$('#w-imgr_form-image-search').submit(function (e) {
 			e.preventDefault();
-			if (!activeSearch) {
-				activeSearch = true;
-				loadImages($('.w-imgr_search_bar').val());
-				$('.w-imgr_more_btn').css('display', 'flex');
-			} else if (activeSearch) {
-				pageNumber = 1;
-				$('.w-imgr_image_container').find($('.w-imgr_image_wrapper')).remove();
-				loadImages($('.w-imgr_search_bar').val());
-				$('.w-imgr_more_btn').css('display', 'flex');
+			function checkInput() {
+				const x = $('.w-imgr_search_bar').val();
+				const regex = /^[a-zA-Z]+$/;
+				if (!x.match(regex)) {
+					$(errorMsg).insertBefore($('.w-imgr_suggestion_container'));
+					return false;
+				} else {
+					if (!activeSearch) {
+						activeSearch = true;
+						$('.w-imgr_more_btn').children($('span')).text('Aan het laden...');
+						$('.w-imgr_more_btn_wrapper').addClass('w-imgr_more_btn_animation');
+						loadImages($('.w-imgr_search_bar').val());
+						$('.w-imgr_more_btn').css('display', 'flex');
+					} else if (activeSearch) {
+						pageNumber = 1;
+						$('.w-imgr_more_btn').children($('span')).text('Aan het laden...');
+						$('.w-imgr_image_container')
+							.find($('.w-imgr_image_wrapper'))
+							.remove();
+						loadImages($('.w-imgr_search_bar').val());
+						$('.w-imgr_more_btn').css('display', 'flex');
+					}
+				}
 			}
+			checkInput();
 		});
 
 		$('.w-imgr_suggestion_text').click(function () {
@@ -364,5 +384,3 @@ $(document).ready(function () {
 		$(this).css('display', 'none');
 	});
 });
-
-// QUERY ERROR => on results === 0 => show error message and prevent image_container from growing => stay same height
