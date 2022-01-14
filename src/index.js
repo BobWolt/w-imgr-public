@@ -6,9 +6,18 @@ import selectedIcon from './images/selected.svg';
 
 // Load css styles
 $('head').append(`<style>${styles.toString()}</style>`);
+let apiKey = '';
+if (document.currentScript.getAttribute('apiKey')) {
+	const getKey = document.currentScript.getAttribute('apiKey');
+	console.log('api key retrieved from script api-key attr: ', getKey);
+	apiKey = getKey;
+}
 
 $(document).ready(function () {
-	const proxy = 'https://w-imgr-proxy.herokuapp.com/';
+	console.log('w-imgr script loaded <3');
+	console.log('api key: ', typeof apiKey, apiKey);
+	//const proxy = 'https://w-imgr-proxy.herokuapp.com/';
+	const proxy = 'http:localhost:3000/';
 
 	// state variable to watch active modal
 	let activeModal = false;
@@ -185,22 +194,44 @@ $(document).ready(function () {
 
 		displayLoading();
 
-		let getImages = await fetch(
+		/* 	let getImages = await fetch(
 			`${proxy}https://api.unsplash.com/search/photos?&orientation=landscape&page=${pageNumber}&per_page=30&query=${query}>`,
 			{
 				method: 'GET',
-				headers: { query: query, page: pageNumber },
+				headers: {
+					query: query,
+					page: pageNumber,
+					Authorization: `Client-ID ${apiKey}`,
+				},
 			}
-		);
+		); */
 
-		let res = await getImages.json();
-		console.log('response', res);
+		const options = {
+			method: 'GET',
+			headers: {
+				query: query,
+				page: pageNumber,
+				api_key: apiKey,
+			},
+		};
 
-		hideLoading();
+		fetch('http://localhost:3000/unsplash-images', options)
+			.then((response) => response.json())
+			.then((response) => {
+				console.log(response);
+				hideLoading();
 
-		displayImages(res);
-		console.log('images amount: ', $('.w-imgr_unsplash_image').length);
-		pageNumber++;
+				displayImages(response);
+				console.log('images amount: ', $('.w-imgr_unsplash_image').length);
+				pageNumber++;
+			})
+			.catch((err) => {
+				// RENDER ERROR IN W-IMGR WIDGET
+				console.error(
+					'401 (Unauthorized) - Check if your API Key is correct',
+					err
+				);
+			});
 	};
 
 	// closing the modal
