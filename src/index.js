@@ -10,6 +10,10 @@ $('head').append(`<style>${styles.toString()}</style>`);
 $(document).ready(function () {
 	const proxy = 'https://w-imgr-proxy.herokuapp.com/';
 
+	const apiKey = document.currentScript.getAttribute('apiKey');
+
+	console.log('apiKey retrieved from script tags', apiKey);
+
 	// state variable to watch active modal
 	let activeModal = false;
 	let activeSearch = false;
